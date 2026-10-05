@@ -10,8 +10,15 @@ export default function Login({ setAuth }) {
     setError('');
     try {
       const res = await API.post('/login', credentials);
-      if (res.data.token) {
-        localStorage.setItem('token', res.data.token);
+      
+
+      console.log('Login API Response:', res.data);
+
+
+      const token = res.data.token || res.data.data?.token || res.data.access_token;
+
+      if (token) {
+        localStorage.setItem('token', token);
         setAuth(true);
       } else {
         setError('Login failed. Token not received.');
@@ -20,6 +27,7 @@ export default function Login({ setAuth }) {
       setError(err.response?.data?.message || 'Invalid username or password.');
     }
   };
+
 
   return (
     <div style={{ maxWidth: '360px', margin: '80px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
