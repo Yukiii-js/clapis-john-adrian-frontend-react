@@ -173,7 +173,7 @@ export default function Products({ onLogout, userRole }) {
                 <td>{p.id}</td>
                       <td className="product-name">{p.product_name}</td>
                       <td className="product-description">{p.description || '—'}</td>
-                      <td>{Number(p.price).toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</td>
+                      <td>{Number(p.price).toLocaleString('en-PH', { style: 'currency', currency: 'PHP' })}</td>
                 <td>{p.quantity}</td>
                 {canManageProducts && <td>
                         <div className="table-actions">
