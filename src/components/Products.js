@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import API from '../api';
 
-export default function Products({ onLogout }) {
+export default function Products({ onLogout, userRole }) {
+  const canManageProducts = userRole === 'admin' || userRole === 'editor';
+  const canDeleteProducts = userRole === 'admin';
   const [products, setProducts] = useState([]);
   const [error, setError] = useState('');
   const [form, setForm] = useState({ id: null, product_name: '', description: '', price: '', quantity: '' });
@@ -54,93 +56,143 @@ export default function Products({ onLogout }) {
   };
 
   return (
-    <div style={{ padding: '24px', maxWidth: '900px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2>Product Management</h2>
-        <button onClick={onLogout} style={{ padding: '8px 16px', cursor: 'pointer' }}>Logout</button>
-      </div>
+    <main className="dashboard">
+      <header className="dashboard-header">
+        <div>
+          <p className="eyebrow">Inventory</p>
+          <h1>Products</h1>
+          <p className="dashboard-subtitle">
+            {canManageProducts ? 'Manage your products in one place.' : 'Browse the product inventory.'}
+          </p>
+        </div>
+        <button className="button button-secondary" onClick={onLogout}>Sign out</button>
+      </header>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && <p className="alert" role="alert">{error}</p>}
 
-      {/* Add / Edit Form */}
-      <form onSubmit={handleSubmit} style={{ background: '#f9f9f9', padding: '16px', borderRadius: '6px', marginBottom: '24px' }}>
-        <h3>{form.id ? 'Edit Product' : 'Add New Product'}</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+      <div className="dashboard-content">
+        {canManageProducts && (
+          <section className="panel" aria-labelledby="product-form-title">
+          <div className="panel-heading">
+            <div>
+              <h2 id="product-form-title">{form.id ? 'Edit product' : 'Add a product'}</h2>
+              <p>{form.id ? 'Update the details below.' : 'Enter the details to add it to your inventory.'}</p>
+            </div>
+          </div>
+          <form className="product-form form-panel" onSubmit={handleSubmit}>
+            <div className="field">
+              <label htmlFor="product-name">Product name</label>
           <input
+            id="product-name"
             type="text"
             placeholder="Product Name"
             value={form.product_name}
             onChange={(e) => setForm({ ...form, product_name: e.target.value })}
             required
           />
+            </div>
+            <div className="field">
+              <label htmlFor="product-description">Description</label>
           <input
+            id="product-description"
             type="text"
             placeholder="Description"
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
+            </div>
+            <div className="field">
+              <label htmlFor="product-price">Price</label>
           <input
+            id="product-price"
             type="number"
             step="0.01"
+            min="0"
             placeholder="Price"
             value={form.price}
             onChange={(e) => setForm({ ...form, price: e.target.value })}
             required
           />
+            </div>
+            <div className="field">
+              <label htmlFor="product-quantity">Quantity</label>
           <input
+            id="product-quantity"
             type="number"
+            min="0"
             placeholder="Quantity"
             value={form.quantity}
             onChange={(e) => setForm({ ...form, quantity: e.target.value })}
             required
           />
-        </div>
-        <div style={{ marginTop: '12px' }}>
-          <button type="submit" style={{ padding: '8px 16px', marginRight: '8px', cursor: 'pointer' }}>
-            {form.id ? 'Update Product' : 'Save Product'}
-          </button>
-          {form.id && (
-            <button type="button" onClick={handleCancelEdit} style={{ padding: '8px 16px', cursor: 'pointer' }}>
-              Cancel
-            </button>
-          )}
-        </div>
-      </form>
+            </div>
+            <div className="form-actions">
+              <button className="button button-primary" type="submit">
+                {form.id ? 'Save changes' : 'Add product'}
+              </button>
+              {form.id && (
+                <button className="button button-secondary" type="button" onClick={handleCancelEdit}>
+                  Cancel
+                </button>
+              )}
+            </div>
+          </form>
+          </section>
+        )}
 
-      {/* Product List Table */}
-      <table border="1" cellPadding="10" style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ background: '#eee' }}>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {products.length === 0 ? (
+        <section className="panel" aria-labelledby="product-list-title">
+          <div className="panel-heading">
+            <div>
+              <h2 id="product-list-title">All products</h2>
+              <p>{canManageProducts ? 'Your current inventory.' : 'Products available in the inventory.'}</p>
+            </div>
+            <span className="product-count">{products.length} items</span>
+          </div>
+          <div className="table-scroll">
+            <table className="product-table">
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Product</th>
+                  <th scope="col">Description</th>
+                  <th scope="col">Price</th>
+                  <th scope="col">Quantity</th>
+                  {canManageProducts && <th scope="col">Actions</th>}
+                </tr>
+              </thead>
+              <tbody>
+                {products.length === 0 ? (
             <tr>
-              <td colSpan="6" style={{ textAlign: 'center' }}>No products found.</td>
+                    <td className="empty-state" colSpan={canManageProducts ? 6 : 5}>
+                      {canManageProducts ? 'No products yet. Add your first product above.' : 'No products found.'}
+                    </td>
             </tr>
           ) : (
             products.map((p) => (
               <tr key={p.id}>
                 <td>{p.id}</td>
-                <td>{p.product_name}</td>
-                <td>{p.description}</td>
-                <td>${parseFloat(p.price).toFixed(2)}</td>
+                      <td className="product-name">{p.product_name}</td>
+                      <td className="product-description">{p.description || '—'}</td>
+                      <td>{Number(p.price).toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</td>
                 <td>{p.quantity}</td>
-                <td>
-                  <button onClick={() => handleEdit(p)} style={{ marginRight: '6px', cursor: 'pointer' }}>Edit</button>
-                  <button onClick={() => handleDelete(p.id)} style={{ cursor: 'pointer' }}>Delete</button>
-                </td>
+                {canManageProducts && <td>
+                        <div className="table-actions">
+                          {canManageProducts && (
+                            <button className="button button-secondary" onClick={() => handleEdit(p)}>Edit</button>
+                          )}
+                          {canDeleteProducts && (
+                            <button className="button button-danger" onClick={() => handleDelete(p.id)}>Delete</button>
+                          )}
+                        </div>
+                </td>}
               </tr>
             ))
           )}
-        </tbody>
-      </table>
-    </div>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
   );
 }

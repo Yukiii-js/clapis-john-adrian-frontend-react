@@ -10,11 +10,6 @@ export default function Login({ setAuth }) {
     setError('');
     try {
       const res = await API.post('/login', credentials);
-      
-
-      console.log('Login API Response:', res.data);
-
-
       const token = res.data.tokens?.access_token
         || res.data.token
         || res.data.data?.token
@@ -22,7 +17,7 @@ export default function Login({ setAuth }) {
 
       if (token) {
         localStorage.setItem('token', token);
-        setAuth(true);
+        setAuth(res.data.user?.role);
       } else {
         setError('Login failed. Token not received.');
       }
@@ -33,34 +28,40 @@ export default function Login({ setAuth }) {
 
 
   return (
-    <div style={{ maxWidth: '360px', margin: '80px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
-      <h2>Login</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '12px' }}>
-          <label>Username</label>
+    <main className="login-page">
+      <section className="login-card" aria-labelledby="login-title">
+        <div className="brand-mark" aria-hidden="true">P.</div>
+        <h1 id="login-title">Welcome back</h1>
+        <p className="login-intro">Sign in to manage your product inventory.</p>
+        {error && <p className="alert" role="alert">{error}</p>}
+        <form className="form-stack" onSubmit={handleSubmit}>
+          <div className="field">
+            <label htmlFor="username">Username</label>
           <input
+            id="username"
             type="text"
-            style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+            placeholder="Enter your username"
             value={credentials.username}
             onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
             required
           />
-        </div>
-        <div style={{ marginBottom: '16px' }}>
-          <label>Password</label>
+          </div>
+          <div className="field">
+            <label htmlFor="password">Password</label>
           <input
+            id="password"
             type="password"
-            style={{ width: '100%', padding: '8px', marginTop: '4px' }}
+            placeholder="Enter your password"
             value={credentials.password}
             onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
             required
           />
-        </div>
-        <button type="submit" style={{ width: '100%', padding: '10px', cursor: 'pointer' }}>
-          Sign In
-        </button>
-      </form>
-    </div>
+          </div>
+          <button className="button button-primary button-full" type="submit">
+            Sign in
+          </button>
+        </form>
+      </section>
+    </main>
   );
 }
