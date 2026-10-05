@@ -15,7 +15,10 @@ export default function Login({ setAuth }) {
       console.log('Login API Response:', res.data);
 
 
-      const token = res.data.token || res.data.data?.token || res.data.access_token;
+      const token = res.data.tokens?.access_token
+        || res.data.token
+        || res.data.data?.token
+        || res.data.access_token;
 
       if (token) {
         localStorage.setItem('token', token);
